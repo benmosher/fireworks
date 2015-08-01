@@ -1,0 +1,14 @@
+{
+  "name": "hanabi",
+  "version": "1.0.0",
+  "description": "hanabi terminal",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ben Mosher <me@benmosher.com>",
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^3.10.0"
+  }
+}
