@@ -16,6 +16,8 @@ rl.setPrompt('>')
 // repl
 
 rl.output.write("let's play.\n")
+writeView(rl.output, game, currentPlayer)
+
 rl.prompt()
 
 rl.on('line', function (line) {
