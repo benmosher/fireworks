@@ -4,12 +4,17 @@
   "description": "hanabi terminal",
   "main": "index.js",
   "scripts": {
+    "start": "babel-node ./index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "babel": { "whitelist": ["es6.modules", "strict"] },
   "author": "Ben Mosher <me@benmosher.com>",
   "license": "MIT",
   "dependencies": {
     "colors": "^1.1.2",
     "lodash": "^3.10.0"
+  },
+  "devDependencies": {
+    "babel": "^5.8.20"
   }
 }
