@@ -7,7 +7,14 @@
     "start": "babel-node ./index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "babel": { "whitelist": ["es6.modules", "strict"] },
+  "babel": { 
+    "whitelist": [
+      "es6.modules", 
+      "strict", 
+      "es6.classes",
+      "es6.arrowFunctions"
+    ] 
+  },
   "author": "Ben Mosher <me@benmosher.com>",
   "license": "MIT",
   "dependencies": {
