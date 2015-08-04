@@ -9,6 +9,7 @@
   "author": "Ben Mosher <me@benmosher.com>",
   "license": "MIT",
   "dependencies": {
+    "colors": "^1.1.2",
     "lodash": "^3.10.0"
   }
 }
