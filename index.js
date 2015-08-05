@@ -1,10 +1,10 @@
 const _ = require('lodash')
 const readline = require('readline')
 
-import { Game, writeView } from './game'
+import { GameState, writeView } from './game'
 
 let currentPlayer = 0
-const game = new Game(4)
+const game = new GameState(4)
 
 var rl = readline.createInterface({
   input: process.stdin,

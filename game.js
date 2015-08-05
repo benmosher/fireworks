@@ -7,7 +7,7 @@ const HAND_COUNT = 4
     , CLUE_MAX = 8
     , FUSE_MAX = 4
 
-export class Game {
+export class GameState {
   // constructor sets up initial game state
   constructor(playerCount) {
     this.deck = deck()
@@ -16,7 +16,7 @@ export class Game {
     this.hands = times(playerCount, () => [])
 
     this.discards = []
-    this.played = {}
+    this.played = {tiles:[]}
 
     this.clues = CLUE_MAX
     this.fuses = FUSE_MAX
@@ -32,10 +32,95 @@ export class Game {
     for (let color of colors) {
       this.played[color] = 0
     }
+
+    this.turn = 0
   }
 
   isPlayable(tile) {
     return this.played[tile.color] === tile.number - 1
+  }
+
+  draw() {
+    let next = this.deal()
+    // check for out of tiles
+    if (next) {
+      this.hands[this.turn].push(next)
+    }
+  }
+
+  takeTile(tile) {
+    if (!includes(this.hands[this.turn], tile)) {
+      throw new InvalidPlay()
+    }
+
+    this.hands[this.turn] = without(this.hands[this.turn], tile)
+  }
+
+  isOver() {
+    return this.fuses === 0 || this.hands[this.turn].length === 0
+  }
+
+  update(action) {
+
+    const { tile } = action
+
+    if (action instanceof Play) {
+      
+      this.takeTile(tile)
+
+      if (!this.isPlayable(tile)) {
+        this.discards.push(tile)
+      } else {
+        this.played.tiles.push(tile)
+
+        this.played[tile.color] = tile.number
+
+        // get a clue back for 5s
+        if (tile.number === 5) {
+          this.clues = Math.max(this.clues + 1, CLUE_MAX)
+        }
+      }
+      this.draw()
+      
+    } else if (action instanceof Discard) {
+
+      this.takeTile(tile)
+      this.discards.push(tile)
+      this.clues = Math.max(this.clues + 1, CLUE_MAX)
+      this.draw()
+
+    } else if (action instanceof Clue) {
+      
+      if (this.clues <= 0) throw new InvalidPlay()
+      this.clues -= 1
+      
+    }
+  
+    // on to the next player
+    this.turn = (this.turn + 1) % this.hands.length
+  }
+}
+
+class GameOver extends Error {}
+class InvalidPlay extends Error {}
+
+export class Play {
+  constructor(tile) {
+    this.tile = tile
+  }
+}
+
+export class Discard {
+  constructor(tile) {
+    this.tile = tile
+  }
+}
+
+export class Clue {
+  constructor(player, indexes, info) {
+    this.player = player
+    this.indexes = indexes
+    this.info = info
   }
 }
 
