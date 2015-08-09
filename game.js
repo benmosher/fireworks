@@ -165,9 +165,12 @@ function clue(state, action) {
   if (state.clues <= 0)
     throw new InvalidPlay("no clues to give")
 
-  const { tiles, clue } = action
+  const { tiles, clue, player } = action
 
-  if (some( this.currentHand
+  if (some(state.currentHand, tile => tiles.has(tile))) 
+    throw new InvalidPlay("no self-clues")
+
+  if (some( state.hands[player]
           , tile => !tiles.has(tile) && matches(tile, clue)))
     throw new InvalidPlay("must provide all matching tiles")
 
