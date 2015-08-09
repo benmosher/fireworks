@@ -30,13 +30,14 @@ import { Shuffle, Deal, Play, Discard, Clue } from './actions'
 import { assign, splice, add, merge, some } from './proto'
 
 export function turn(state = INITIAL_STATE, action) {
-
-  if (isGameOver(state)) 
-    throw new InvalidPlay("game has ended")
-
   if (action instanceof Shuffle) {
     return shuffle(state, action)
   }
+
+  if (state == null) throw new InvalidPlay("need state for non-shuffle actions")
+
+  if (isGameOver(state)) 
+    throw new InvalidPlay("game has ended")
 
   if (action instanceof Deal) {
     return deal(state, action)
@@ -62,6 +63,10 @@ function nextTurn(state) {
 
 function shuffle(state, action) {
   if (state.deck != null) throw new InvalidPlay('deck exists')
+
+  if (action.deck == null || action.deck.length != 50) 
+    throw new InvalidPlay("invalid deck")
+
   return assign(state, { deck: action.deck })
 }
 

@@ -1,8 +1,11 @@
+import { shuffle } from 'lodash'
+import { makeDeck } from './deck'
+
 /**
  * always and only the first "event"
  */
 export class Shuffle {
-  constructor(deck) {
+  constructor(deck = shuffle(makeDeck())) {
     this.deck = Object.freeze(deck)
   }
 }
