@@ -1,10 +1,10 @@
 const colorText = require('colors/safe')
 
-import { makeDeck, colors } from './deck'
-import { times, shuffle } from 'lodash'
+import { isEmpty } from 'lodash'
 
-const HAND_COUNT = 4
-    , CLUE_MAX = 8
+import { DECK_LENGTH, colors } from './deck'
+
+const CLUE_MAX = 8
     , FUSE_MAX = 4
 
 export class GameState {
@@ -13,7 +13,7 @@ export class GameState {
     this.deck = null
     this.hands = []
 
-    this.discards = []
+    this.discards = new Set()
     this.played = {}
 
     this.clues = CLUE_MAX
@@ -38,11 +38,10 @@ export class GameState {
   }
 }
 
-class GameOver extends Error {}
 class InvalidPlay extends Error {}
 
 import { Shuffle, Deal, Play, Discard, Clue } from './actions'
-import protoAssign from './proto-assign'
+import { assign, splice, push, add } from './proto'
 
 function turn(state = new GameState(), action) {
 
@@ -57,20 +56,15 @@ function turn(state = new GameState(), action) {
     return deal(state, action)
   }
 
-  const { tile } = action
-
   if (action instanceof Play) {
     return play(state, action)
   }
 
   if (action instanceof Discard) {
+    return discard(state, action)
+  }
 
-    this.takeTile(tile)
-    this.discards.push(tile)
-    this.clues = Math.max(this.clues + 1, CLUE_MAX)
-    this.draw()
-
-  } else if (action instanceof Clue) {
+  if (action instanceof Clue) {
     
     if (this.clues <= 0) throw new InvalidPlay()
     this.clues -= 1
@@ -83,7 +77,7 @@ function turn(state = new GameState(), action) {
 
 function shuffle(state, action) {
   if (state.deck != null) throw new InvalidPlay('deck exists')
-  return protoAssign(state, { deck: action.deck })
+  return assign(state, { deck: action.deck })
 }
 
 function deal(state, action) {
@@ -106,7 +100,18 @@ function deal(state, action) {
   Object.freeze(deck)
   Object.freeze(hands)
 
-  return protoAssign(state, { hands, deck })
+  return assign(state, { hands, deck })
+}
+
+function removeAndDraw(state, tile) {
+  const hand = new Set(state.currentHand)
+      , hands = splice(state.hands, state.turn, 1, hand)
+      , [drawn, ...deck] = state.deck
+
+  hand.delete(tile)
+  hand.add(drawn)
+
+  return { hand, hands, deck }
 }
 
 function play(state, action) {
@@ -116,31 +121,30 @@ function play(state, action) {
     throw new InvalidPlay("must play tiles from hand")
 
 
-  if (!state.isPlayable(tile)) {
+  if (state.isPlayable(tile)) {
+    const played = assign(state.played, { [tile.color]: [tile.number] })
+        , clues = tile.number === 5 ? Math.max(state.clues + 1, CLUE_MAX) 
+                                    : state.clues
+
+    return assign(state, { played, clues }, removeAndDraw(state, tile))
+  } else {
     const discards = state.discards.concat(tile)
         , fuses = state.fuses - 1
-        , hand = new Set(state.currentHand)
-        , hands = state.hands.slice()
-        , [draw, ...deck] = state.deck
 
-    hand.delete(tile)
-    hand.add(draw)
-
-    hands.splice(state.turn, 1, hand)
-
-    return protoAssign(state, { discards, fuses })
+    return assign(state, { discards, fuses }, removeAndDraw(state, tile))
   }
-    // } else {
-    //   this.played.tiles.push(tile)
+}
 
-    //   this.played[tile.color] = tile.number
+function discard(state, action) {
+  const { tile } = action.tile
 
-    //   // get a clue back for 5s
-    //   if (tile.number === 5) {
-    //     this.clues = Math.max(this.clues + 1, CLUE_MAX)
-    //   }
-    // }
-    // this.draw()
+  if (!state.currentHand.has(tile)) 
+    throw new InvalidPlay("can't discard what you don't have")
+
+  const discards = add(state.discards, tile)
+      , clues = Math.max(state.clues + 1, CLUE_MAX)
+
+  return assign(state, { discards, clues }, removeAndDraw(state, tile))
 }
 
 

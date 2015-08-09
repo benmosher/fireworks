@@ -1,6 +1,9 @@
 import { isEmpty } from 'lodash'
 
-export function push(object, assignment) {
+export function assign(object, ...assignments) {
+  // flatten first
+  const assignment = Object.assign({}, ...assignments)
+
   if (isEmpty(object)) {
     return assignment
   }
@@ -21,13 +24,25 @@ export function push(object, assignment) {
 
   if (isEmpty(descriptor)) return object
 
-  return Object.create(object, descriptor)
+  return Object.freeze(Object.create(object, descriptor))
 }
 
-export function pop(object) {
-  return Object.getPrototypeOf(object)
+export function push(array, element) {
+  const arr = array.slice()
+  arr.push(element)
+  return arr
 }
 
 export function splice(array, index, count, ...items) {
-  return array.slice().splice()
+  return array.slice().splice(index, count, ...items)
+}
+
+
+export function add(set, element) {
+  if (set.has(element)) return set
+
+  const clone = new Set(set)
+  clone.add(element)
+
+  return clone
 }
