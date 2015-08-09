@@ -4,8 +4,8 @@ import { Shuffle, Deal } from '../actions'
 import { expect } from 'chai'
 
 describe("game redux", function () {
-  let state
   describe("Shuffle", function () {
+    let state
     before(() => state = undefined)
     it("creates a state and assigns the deck", function () {
       let shuffle = new Shuffle()
@@ -16,18 +16,38 @@ describe("game redux", function () {
   })
 
   describe("Deal", function () {
-    let shuffle
-    before(() => {
-      shuffle = new Shuffle()
-      state = turn(undefined, shuffle)
-    })
+    let shuffle, deal, states
+    describe("four players", function () {
+      before(() => {
+        states = []
 
-    it("works for 4 players", function () {
-      let deal = new Deal(4)
-      let dealtState = turn(state, deal)
+        shuffle = new Shuffle()
+        states.push(turn(undefined, shuffle))
+        
+        deal = new Deal(4)
+        states.push(turn(states[0], deal))
+      })
 
-      expect(state).not.to.equal(dealtState)
-      expect(dealtState.deck).to.have.property('length', 34)
+      it("produced a new game state", function () {
+        expect(states[1]).not.to.equal(states[0])
+      })
+
+      it("consumed first 16 tiles from deck", function () {
+        expect(states[1].deck).to.have.property('length', 34)
+        // popped last 16
+        expect(states[0].deck.slice(0, 50 - 16)).to.deep.equal(states[1].deck)
+      })
+
+      it("has four hands", function () {
+        // expect(state).not.to.equal(dealtState)
+        expect(states[1].hands.length).to.equal(deal.playerCount)
+      })
+
+      it("has 4 tiles per hand", function () {
+        for (let hand of states[1].hands) {
+          expect(hand.size).to.equal(4)
+        }
+      })
     })
   })
 })
