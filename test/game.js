@@ -84,6 +84,12 @@ describe("game redux", function () {
   })
 
   describe("Play", function () {
-    // let 
+    let states
+    before(() => {
+      states = []
+
+      states.push(new Shuffle())
+      states.push(new Deal(4))
+    })
   })
 })
