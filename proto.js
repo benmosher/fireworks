@@ -1,30 +1,5 @@
-import { isEmpty } from 'lodash'
-
 export function assign(object, ...assignments) {
-  // flatten first
-  const assignment = Object.assign({}, ...assignments)
-
-  if (isEmpty(object)) {
-    return assignment
-  }
-
-  const descriptor = Object.keys(assignment)
-    .reduce((acc, key) => { 
-      if (object[key] !== assignment[key]) {
-        // only for vanilla objects...
-        // if (Object.getPrototypeOf(assignment[key]) === Object.prototype) {
-        //   // and recurse
-        //   acc[key] = { value: protoAssign(object[key], assignment[key]) }
-        // } else {
-        acc[key] = { value: assignment[key], enumerable: true }
-        // }
-      }
-      return acc
-    }, {})
-
-  if (isEmpty(descriptor)) return object
-
-  return Object.freeze(Object.create(object, descriptor))
+  return Object.freeze(Object.assign({}, object, ...assignments))
 }
 
 // update method replacements
