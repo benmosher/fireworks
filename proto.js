@@ -16,7 +16,7 @@ export function assign(object, ...assignments) {
         //   // and recurse
         //   acc[key] = { value: protoAssign(object[key], assignment[key]) }
         // } else {
-        acc[key] = { value: assignment[key] }
+        acc[key] = { value: assignment[key], enumerable: true }
         // }
       }
       return acc

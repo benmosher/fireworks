@@ -64,6 +64,10 @@ describe("game redux", function () {
         expect(states[1]).not.to.equal(states[0])
       })
 
+      it("is on turn 0", function () {
+        expect(states[1]).to.have.property('turn', 0)
+      })
+
       it("consumed first 15 tiles from deck", function () {
         expect(states[1].deck).to.have.property('length', 35)
         // popped last 15

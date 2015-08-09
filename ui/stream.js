@@ -29,11 +29,14 @@ function boardString(board) {
 // IO
 const readline = require('readline')
 
+import { last } from 'lodash'
 import { turn } from '../game'
 import * as Actions from '../actions'
 
 export function repl() {
-  let game = turn(game, new Actions.Shuffle())
+  let states = []
+  states.push(turn(last(states), new Actions.Shuffle()))
+  states.push(turn(last(states), new Actions.Deal(2)))
 
   var rl = readline.createInterface({
     input: process.stdin,
@@ -45,7 +48,7 @@ export function repl() {
   // repl
 
   rl.output.write("let's play.\n")
-  writeView(rl.output, game)
+  writeView(rl.output, last(states))
 
   rl.prompt()
 

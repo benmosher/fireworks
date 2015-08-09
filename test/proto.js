@@ -3,10 +3,11 @@ import { expect } from 'chai'
 import { assign } from '../proto'
 
 describe("proto - assign", function () {
-  let foo, bar
+  let foo, bar, baz
   before(() => {
     foo = { a: 1, b: 2 }
     bar = assign(foo, { b: 3, c: 4})
+    baz = assign(bar, { a: 2 })
   })
 
   it("is a new object", function () {
@@ -25,7 +26,13 @@ describe("proto - assign", function () {
     expect(foo).not.to.have.property('c')
   })
 
-  it("impl detail: foo is bar's prototype", function () {
+  xit("impl detail: foo is bar's prototype", function () {
     expect(foo).to.equal(bar.__proto__)
+  })
+
+  it("third time's the charm", function () {
+    expect(baz).property('a', 2)
+    expect(baz).property('b', 3)
+    expect(baz).property('c', 4)
   })
 })
