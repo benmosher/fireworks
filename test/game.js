@@ -49,5 +49,41 @@ describe("game redux", function () {
         }
       })
     })
+    describe("three players", function () {
+      before(() => {
+        states = []
+
+        shuffle = new Shuffle()
+        states.push(turn(undefined, shuffle))
+        
+        deal = new Deal(3)
+        states.push(turn(states[0], deal))
+      })
+
+      it("produced a new game state", function () {
+        expect(states[1]).not.to.equal(states[0])
+      })
+
+      it("consumed first 15 tiles from deck", function () {
+        expect(states[1].deck).to.have.property('length', 35)
+        // popped last 15
+        expect(states[0].deck.slice(0, 50 - 15)).to.deep.equal(states[1].deck)
+      })
+
+      it("has three hands", function () {
+        // expect(state).not.to.equal(dealtState)
+        expect(states[1].hands.length).to.equal(deal.playerCount)
+      })
+
+      it("has 5 tiles per hand", function () {
+        for (let hand of states[1].hands) {
+          expect(hand.size).to.equal(5)
+        }
+      })
+    })
+  })
+
+  describe("Play", function () {
+    // let 
   })
 })
