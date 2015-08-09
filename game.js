@@ -15,6 +15,7 @@ export class GameState {
 
     this.discards = new Set()
     this.played = {}
+    this.knowledge = new Map()
 
     this.clues = CLUE_MAX
     this.fuses = FUSE_MAX
@@ -27,25 +28,17 @@ export class GameState {
     this.turn = 0
   }
 
-  isPlayable(tile) {
-    return this.played[tile.color] === tile.number - 1
-  }
-
   get currentHand() { return this.hands[this.turn] }
-
-  isOver() {
-    return this.fuses === 0 || this.hands[this.turn].length === 0
-  }
 }
 
 class InvalidPlay extends Error {}
 
 import { Shuffle, Deal, Play, Discard, Clue } from './actions'
-import { assign, splice, push, add } from './proto'
+import { assign, splice, add, merge, some } from './proto'
 
-function turn(state = new GameState(), action) {
+export function turn(state = new GameState(), action) {
 
-  if (state.isOver()) 
+  if (isGameOver(state)) 
     throw new InvalidPlay("game has ended")
 
   if (action instanceof Shuffle) {
@@ -65,14 +58,13 @@ function turn(state = new GameState(), action) {
   }
 
   if (action instanceof Clue) {
-    
-    if (this.clues <= 0) throw new InvalidPlay()
-    this.clues -= 1
-    
+    return clue(state, action)
   }
+}
 
+function nextTurn(state) {
   // on to the next player
-  this.turn = (this.turn + 1) % this.hands.length
+  return { turn: (state.turn + 1) % state.hands.length }
 }
 
 function shuffle(state, action) {
@@ -89,7 +81,7 @@ function deal(state, action) {
   let deck = state.deck.slice()
     , hands = []
   let handCount = action.playerCount <= 3 ? 5 : 4
-  for (let i = 0; i < playerCount; i++) {
+  for (let i = 0; i < action.playerCount; i++) {
     let hand = new Set(); hands.push(hand)
     for (let j = 0; j < handCount; j++) {
       hand.add(deck.pop())
@@ -121,18 +113,30 @@ function play(state, action) {
     throw new InvalidPlay("must play tiles from hand")
 
 
-  if (state.isPlayable(tile)) {
+  if (isPlayable(state, tile)) {
     const played = assign(state.played, { [tile.color]: [tile.number] })
         , clues = tile.number === 5 ? Math.max(state.clues + 1, CLUE_MAX) 
                                     : state.clues
 
-    return assign(state, { played, clues }, removeAndDraw(state, tile))
+    return assign( state
+                 , { played, clues }
+                 , removeAndDraw(state, tile)
+                 , nextTurn(state)
+                 )
   } else {
     const discards = state.discards.concat(tile)
         , fuses = state.fuses - 1
 
-    return assign(state, { discards, fuses }, removeAndDraw(state, tile))
+    return assign( state
+                 , { discards, fuses }
+                 , removeAndDraw(state, tile)
+                 , nextTurn(state)
+                 )
   }
+}
+
+function isPlayable(state, tile) {
+  return state.played[tile.color] === tile.number - 1
 }
 
 function discard(state, action) {
@@ -144,7 +148,36 @@ function discard(state, action) {
   const discards = add(state.discards, tile)
       , clues = Math.max(state.clues + 1, CLUE_MAX)
 
-  return assign(state, { discards, clues }, removeAndDraw(state, tile))
+  return assign( state
+               , { discards, clues }
+               , removeAndDraw(state, tile)
+               , nextTurn(state)
+               )
+}
+
+function isGameOver(state) {
+  return state.fuses === 0 || state.currentHand.length !==
+    (state.hands.length <= 3 ? 5 : 4)
+}
+
+function clue(state, action) {
+  if (state.clues <= 0)
+    throw new InvalidPlay("no clues to give")
+
+  const { tiles, clue } = action
+
+  if (some( this.currentHand
+          , tile => !tiles.has(tile) && matches(tile, clue)))
+    throw new InvalidPlay("must provide all matching tiles")
+
+  const clues = state.clues - 1
+      , knowledge = merge(state.knowledge, tiles.map(tile => [tile, clue]))
+
+  return assign(state, { clues, knowledge }, nextTurn(state))
+}
+
+function matches(tile, clue) {
+  return tile.color === clue.color || tile.number === clue.number
 }
 
 
