@@ -36,12 +36,12 @@ export function turn(state = INITIAL_STATE, action) {
 
   if (state == null) throw new InvalidPlay("need state for non-shuffle actions")
 
-  if (isGameOver(state)) 
-    throw new InvalidPlay("game has ended")
-
   if (action instanceof Deal) {
     return deal(state, action)
   }
+
+  if (isGameOver(state)) 
+    throw new InvalidPlay("game has ended")
 
   if (action instanceof Play) {
     return play(state, action)

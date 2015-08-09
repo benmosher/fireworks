@@ -1,19 +1,17 @@
-import { shuffle } from 'lodash'
-import { makeDeck } from './deck'
+import { shuffledDeck } from './deck'
 
 /**
  * always and only the first "event"
  */
 export class Shuffle {
-  constructor(deck = shuffle(makeDeck())) {
+  constructor(deck = shuffledDeck()) {
     this.deck = Object.freeze(deck)
   }
 }
 
 export class Deal {
-  constructor(playerCount, handCount) {
+  constructor(playerCount) {
     this.playerCount = playerCount
-    this.handCount = handCount
   }
 }
 

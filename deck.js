@@ -1,4 +1,4 @@
-const _ = require('lodash')
+import { shuffle } from 'lodash'
 
 export const colors = ['red', 'yellow', 'green', 'blue', 'white']
 
@@ -19,4 +19,8 @@ export function makeDeck() {
   }
 
   return Object.freeze(deck)
+}
+
+export function shuffledDeck() {
+  return Object.freeze(shuffle(makeDeck()))
 }
