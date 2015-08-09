@@ -7,36 +7,31 @@ import { DECK_LENGTH, colors } from './deck'
 const CLUE_MAX = 8
     , FUSE_MAX = 4
 
-export class GameState {
-  // constructor sets up initial game state
-  constructor() {
-    this.deck = null
-    this.hands = []
+// game starting state objects
+const INITIAL_PLAYED = Object.freeze(
+  Object.assign({}, ...colors.map(c => ({ [c]: 0 }))))
 
-    this.discards = new Set()
-    this.played = {}
-    this.knowledge = new Map()
+const INITIAL_STATE = Object.freeze({
+  deck: null,
+  hands: [],
 
-    this.clues = CLUE_MAX
-    this.fuses = FUSE_MAX
+  played: INITIAL_PLAYED,
+  discards: new Set(),
+  
+  knowledge: new Map(),
 
-    // set up board
-    for (let color of colors) {
-      this.played[color] = 0
-    }
+  clues: CLUE_MAX,
+  fuses: FUSE_MAX,
 
-    this.turn = 0
-  }
-
-  get currentHand() { return this.hands[this.turn] }
-}
+  turn: 0
+})
 
 class InvalidPlay extends Error {}
 
 import { Shuffle, Deal, Play, Discard, Clue } from './actions'
 import { assign, splice, add, merge, some } from './proto'
 
-export function turn(state = new GameState(), action) {
+export function turn(state = INITIAL_STATE, action) {
 
   if (isGameOver(state)) 
     throw new InvalidPlay("game has ended")
@@ -96,7 +91,7 @@ function deal(state, action) {
 }
 
 function removeAndDraw(state, tile) {
-  const hand = new Set(state.currentHand)
+  const hand = new Set(currentHand(state))
       , hands = splice(state.hands, state.turn, 1, hand)
       , [drawn, ...deck] = state.deck
 
@@ -109,7 +104,7 @@ function removeAndDraw(state, tile) {
 function play(state, action) {
   const { tile } = action
 
-  if (!state.currentHand.has(tile))
+  if (!currentHand(state).has(tile))
     throw new InvalidPlay("must play tiles from hand")
 
 
@@ -135,6 +130,8 @@ function play(state, action) {
   }
 }
 
+function currentHand(state) { return state.hands[state.turn] }
+
 function isPlayable(state, tile) {
   return state.played[tile.color] === tile.number - 1
 }
@@ -142,7 +139,7 @@ function isPlayable(state, tile) {
 function discard(state, action) {
   const { tile } = action.tile
 
-  if (!state.currentHand.has(tile)) 
+  if (!currentHand(state).has(tile)) 
     throw new InvalidPlay("can't discard what you don't have")
 
   const discards = add(state.discards, tile)
@@ -156,9 +153,10 @@ function discard(state, action) {
 }
 
 function isGameOver(state) {
-  return state.fuses === 0 || state.currentHand.length !==
+  return state.fuses === 0 || currentHand(state).length !==
     (state.hands.length <= 3 ? 5 : 4)
 }
+
 
 function clue(state, action) {
   if (state.clues <= 0)
