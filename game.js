@@ -111,7 +111,7 @@ function play(state, action) {
     throw new InvalidPlay("must play tiles from hand")
 
   if (isPlayable(state, tile)) {
-    const played = assign(state.played, { [tile.color]: [tile.number] })
+    const played = assign(state.played, { [tile.color]: tile.number })
         , clues = tile.number === 5 ? Math.max(state.clues + 1, CLUE_MAX) 
                                     : state.clues
 
