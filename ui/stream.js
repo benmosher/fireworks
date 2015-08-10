@@ -72,9 +72,7 @@ export function repl() {
 
   rl.on('line', function (line) {
     const action = parseTurn(line)
-
     if (action != null) state = turn(state, action)
-    
     writeView(rl.output, state)
     rl.prompt()
   }) 
@@ -105,8 +103,8 @@ export function repl() {
     let match
     for (let [pattern, fn] of turnTypes) {
       if (null != (match = pattern.exec(line))) {
-        fn(match)
+        return fn(match)
       }
     }
-}
+  }
 }
