@@ -3,7 +3,7 @@ import { isEmpty } from 'lodash'
 import { DECK_LENGTH, colors } from './deck'
 
 const CLUE_MAX = 8
-    , FUSE_MAX = 4
+    , FUSE_MAX = 3
 
 // game starting state objects
 const INITIAL_PLAYED = Object.freeze(
@@ -133,7 +133,7 @@ function play(state, action) {
   }
 }
 
-function currentHand(state) { return state.hands[state.turn] }
+export function currentHand(state) { return state.hands[state.turn] }
 
 function isPlayable(state, tile) {
   return state.played[tile.color] === tile.number - 1
