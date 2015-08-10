@@ -52,7 +52,7 @@ export function merge(map, other) {
   return clone
 }
 
-// predicates
+// iterables
 
 export function some(iterable, predicate) {
   if (iterable == null) return false
@@ -62,4 +62,8 @@ export function some(iterable, predicate) {
   }
 
   return false
+}
+
+export function first(iterable) {
+  return iterable[Symbol.iterator]().next().value
 }

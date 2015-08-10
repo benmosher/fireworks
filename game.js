@@ -110,7 +110,6 @@ function play(state, action) {
   if (!currentHand(state).has(tile))
     throw new InvalidPlay("must play tiles from hand")
 
-
   if (isPlayable(state, tile)) {
     const played = assign(state.played, { [tile.color]: [tile.number] })
         , clues = tile.number === 5 ? Math.max(state.clues + 1, CLUE_MAX) 
@@ -122,7 +121,7 @@ function play(state, action) {
                  , nextTurn(state)
                  )
   } else {
-    const discards = state.discards.concat(tile)
+    const discards = add(state.discards, tile)
         , fuses = state.fuses - 1
 
     return assign( state
@@ -135,7 +134,7 @@ function play(state, action) {
 
 export function currentHand(state) { return state.hands[state.turn] }
 
-function isPlayable(state, tile) {
+export function isPlayable(state, tile) {
   return state.played[tile.color] === tile.number - 1
 }
 
@@ -156,7 +155,7 @@ function discard(state, action) {
 }
 
 function isGameOver(state) {
-  return state.fuses === 0 || currentHand(state).length !==
+  return state.fuses === 0 || currentHand(state).size <
     (state.hands.length <= 3 ? 5 : 4)
 }
 

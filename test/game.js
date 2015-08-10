@@ -1,5 +1,6 @@
-import { turn } from '../game'
-import { Shuffle, Deal } from '../actions'
+import { turn, currentHand, isPlayable } from '../game'
+import { first } from '../proto'
+import { Shuffle, Deal, Play } from '../actions'
 
 import { expect } from 'chai'
 
@@ -88,12 +89,25 @@ describe("game redux", function () {
   })
 
   describe("Play", function () {
-    let states
+    let actions, states, play
     before(() => {
-      states = []
+      actions = []
 
-      states.push(new Shuffle())
-      states.push(new Deal(4))
+      actions.push(new Shuffle())
+      actions.push(new Deal(4))
+      
+      states = [actions.reduce(turn, undefined)]
+      let tile = first(currentHand(states[0]))
+      play = new Play(tile)
+      states.push(turn(states[0], new Play(tile)))
+    })
+
+    it("was played correctly", function () {
+      if (isPlayable(states[0], play.tile)) {
+        expect(states[1].discards.has(play.tile)).to.be.false
+      } else {
+        expect(states[1].discards.has(play.tile)).to.be.true
+      }
     })
   })
 })
