@@ -11,7 +11,9 @@ export function push(array, element) {
 }
 
 export function splice(array, index, count, ...items) {
-  return array.slice().splice(index, count, ...items)
+  let clone = array.slice()
+  clone.splice(index, count, ...items)
+  return clone
 }
 
 
