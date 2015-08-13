@@ -109,5 +109,58 @@ describe("game redux", function () {
         expect(states[1].discards.has(play.tile)).to.be.true
       }
     })
+
+    it("didn't fry the hands", function () {
+      expect(states[1].hands.length).to.equal(4)
+      for (let hand of states[1].hands) {
+        expect(hand).to.exist
+      }
+    })
+
+    it("increments the turn indicator", function () {
+      expect(states[1].turn).to.equal(1)
+    })
+
+    it("still has a currentHand", function () {
+      expect(currentHand(states[1])).to.exist
+    })
+  })
+
+  describe("Play", function () {
+    let actions, states, play
+    before(() => {
+      actions = []
+
+      actions.push(new Shuffle())
+      actions.push(new Deal(2))
+      
+      states = [actions.reduce(turn, undefined)]
+      let tile = first(currentHand(states[0]))
+      play = new Play(tile)
+      states.push(turn(states[0], play))
+
+      // second play
+      tile = first(currentHand(states[1]))
+      play = new Play(tile)
+      states.push(turn(states[1], play))
+    })
+
+    it("was played correctly", function () {
+      if (isPlayable(states[0], play.tile)) {
+        expect(states[1].discards.has(play.tile)).to.be.false
+      } else {
+        expect(states[1].discards.has(play.tile)).to.be.true
+      }
+    })
+
+    it("didn't fry the hands", function () {
+      for (let hand of states[1].hands) {
+        expect(hand).to.exist
+      }
+    })
+
+    it("increments the turn indicator", function () {
+      expect(states[1].turn).to.equal(1)
+    })
   })
 })
