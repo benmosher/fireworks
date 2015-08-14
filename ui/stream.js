@@ -81,7 +81,11 @@ export function repl() {
 
   rl.on('line', function (line) {
     const action = parseTurn(line)
-    if (action != null) state = turn(state, action)
+    try {
+      if (action != null) state = turn(state, action)
+    } catch (err) {
+      write(`play error: ${err}\n`)
+    }
     writeView(rl.output, state)
     rl.prompt()
   }) 
@@ -98,11 +102,16 @@ export function repl() {
         write("tile not found, try again.\n")
         return null
       }
-
-      rl.output.write(JSON.stringify(tile)+'\n')
       return new Actions.Play(tile)
     }],
-    [/discard (\d)/, () => {}],
+    [/discard (\d)/, function discard([, tileIndex]) {
+      if (tileIndex >= currentHand(state).size) {
+        write("invalid tile index")
+        return
+      }
+
+      return new Actions.Discard(Array.from(currentHand(state))[tileIndex])
+    }],
     [ /tell player (\d) about (red|blue|green|yellow|white)?(\d)?/
     , function clue([,player, color, number]) {
       let info
@@ -113,8 +122,7 @@ export function repl() {
         return
       }
       return new Actions.Clue(player, info)
-    }
-    ]
+    }]
   ]
 
   function parseTurn(line) {
