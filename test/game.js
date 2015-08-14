@@ -1,6 +1,6 @@
 import { turn, currentHand, isPlayable } from '../game'
 import { first } from '../proto'
-import { Shuffle, Deal, Play } from '../actions'
+import { Shuffle, Deal, Play, Clue } from '../actions'
 
 import { expect } from 'chai'
 
@@ -146,17 +146,44 @@ describe("game redux", function () {
     })
 
     it("was played correctly", function () {
-      if (isPlayable(states[0], play.tile)) {
-        expect(states[1].discards.has(play.tile)).to.be.false
+      if (isPlayable(states[1], play.tile)) {
+        expect(states[2].discards.has(play.tile)).to.be.false
       } else {
-        expect(states[1].discards.has(play.tile)).to.be.true
+        expect(states[2].discards.has(play.tile)).to.be.true
       }
     })
 
     it("didn't fry the hands", function () {
-      for (let hand of states[1].hands) {
+      for (let hand of states[2].hands) {
         expect(hand).to.exist
       }
+    })
+
+    it("increments the turn indicator", function () {
+      expect(states[2].turn).to.equal(0)
+    })
+  })
+
+  describe("Clue", function () {
+    let actions, states, tile, clue
+    before(() => {
+      actions = []
+
+      actions.push(new Shuffle())
+      actions.push(new Deal(2))
+      
+      states = [actions.reduce(turn, undefined)]
+      tile = first(states[0].hands[1])
+      clue = new Clue(1, { color: tile.color })
+      states.push(turn(states[0], clue))
+    })
+
+    it("burned a clue", function () {
+      expect(states[1].clues).to.equal(7)
+    })
+
+    it("added color knowledge", function () {
+      expect(states[1].knowledge.get(tile)).to.deep.equal({ color: tile.color })
     })
 
     it("increments the turn indicator", function () {

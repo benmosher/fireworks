@@ -7,7 +7,7 @@ const CLUE_MAX = 8
 
 // game starting state objects
 const INITIAL_PLAYED = Object.freeze(
-  Object.assign({}, ...colors.map(c => ({ [c]: 0 }))))
+  Object.assign({}, ...Array.from(colors, c => ({ [c]: 0 }))))
 
 const INITIAL_STATE = Object.freeze({
   deck: null,
@@ -27,7 +27,7 @@ const INITIAL_STATE = Object.freeze({
 class InvalidPlay extends Error {}
 
 import { Shuffle, Deal, Play, Discard, Clue } from './actions'
-import { assign, splice, add, merge, some } from './proto'
+import { assign, splice, add, filter, some } from './proto'
 
 export function turn(state = INITIAL_STATE, action) {
   if (action instanceof Shuffle) {
@@ -164,17 +164,23 @@ function clue(state, action) {
   if (state.clues <= 0)
     throw new InvalidPlay("no clues to give")
 
-  const { tiles, clue, player } = action
+  const { info, player } = action
 
-  if (some(state.currentHand, tile => tiles.has(tile))) 
+  if (state.turn === player) 
     throw new InvalidPlay("no self-clues")
 
-  if (some( state.hands[player]
-          , tile => !tiles.has(tile) && matches(tile, clue)))
-    throw new InvalidPlay("must provide all matching tiles")
+  if (!some( state.hands[player]
+           , tile => matches(tile, info)))
+    throw new InvalidPlay("player must have some of this")
+
+  const clueTiles = filter(state.hands[player], tile => matches(tile, info))
 
   const clues = state.clues - 1
-      , knowledge = merge(state.knowledge, tiles.map(tile => [tile, clue]))
+      , knowledge = new Map(state.knowledge)
+
+  for (let tile of clueTiles) {
+    knowledge.set(tile, Object.assign({}, knowledge.get(tile), info))
+  }
 
   return assign(state, { clues, knowledge }, nextTurn(state))
 }

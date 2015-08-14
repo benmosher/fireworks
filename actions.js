@@ -28,9 +28,8 @@ export class Discard {
 }
 
 export class Clue {
-  constructor(player, indexes, info) {
+  constructor(player, info) {
     this.player = player
-    this.indexes = indexes
     this.info = info
   }
 }

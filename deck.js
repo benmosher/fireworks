@@ -1,6 +1,6 @@
 import { shuffle } from 'lodash'
 
-export const colors = ['red', 'yellow', 'green', 'blue', 'white']
+export const colors = new Set(['red', 'yellow', 'green', 'blue', 'white'])
 
 export const numbers = [1, 2, 3, 4, 5]
            , counts =  [3, 2, 2, 2, 1]

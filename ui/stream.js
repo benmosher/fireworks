@@ -21,9 +21,17 @@ function writePlayer(stream, player, hand, knowledge) {
   stream.write(`\tand knows: ${knowledgeString(hand, knowledge)}\n`)
 }
 
+const numberMap = {
+  1: '  *  ',
+  2: ' * * ',
+  3: ' *** ',
+  4: '** **',
+  5: '*****'
+}
+
 function handString(hand) {
   return Array.from(hand, h => 
-    colorText[h.color](`${h.color} ${h.number}`)).join(', \t')
+    colorText[h.color](numberMap[h.number])).join(', \t')
 }
 
 function knowledgeString(hand, knowledge) {
@@ -44,6 +52,7 @@ function boardString(board) {
 // IO
 const readline = require('readline')
 
+import { colors } from '../deck'
 import { turn, currentHand } from '../game'
 import * as Actions from '../actions'
 
@@ -94,8 +103,16 @@ export function repl() {
       return new Actions.Play(tile)
     }],
     [/discard (\d)/, () => {}],
-    [ /(tell|clue)( player)? \d( about)? (red|blue|green|yellow|white|\d)/
-    , function clue() {}
+    [ /(tell|clue)( player)? \d( about)? (red|blue|green|yellow|white)|(\d)/
+    , function clue([, player,, color, number]) {
+      let info
+      if (color && colors.has(color)) info = { color }
+      if (number && number in numberMap) info = { number }
+      if (!info) {
+        write("invalid clue.")
+        return
+      }
+    }
     ]
   ]
 

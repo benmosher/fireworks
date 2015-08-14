@@ -69,3 +69,11 @@ export function some(iterable, predicate) {
 export function first(iterable) {
   return iterable[Symbol.iterator]().next().value
 }
+
+export function* filter(iterable, predicate) {
+  for (let item of iterable) {
+    if (predicate(item)) {
+      yield item
+    }
+  }
+}
