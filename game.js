@@ -24,8 +24,6 @@ const INITIAL_STATE = Object.freeze({
   turn: 0
 })
 
-class InvalidPlay extends Error {}
-
 import { Shuffle, Deal, Play, Discard, Clue } from './actions'
 import { assign, splice, add, filter, some } from './proto'
 
@@ -34,14 +32,14 @@ export function turn(state = INITIAL_STATE, action) {
     return shuffle(state, action)
   }
 
-  if (state == null) throw new InvalidPlay("need state for non-shuffle actions")
+  if (state == null) throw new Error("need state for non-shuffle actions")
 
   if (action instanceof Deal) {
     return deal(state, action)
   }
 
   if (isGameOver(state)) 
-    throw new InvalidPlay("game has ended")
+    throw new Error("game has ended")
 
   if (action instanceof Play) {
     return play(state, action)
@@ -62,19 +60,19 @@ function nextTurn(state) {
 }
 
 function shuffle(state, action) {
-  if (state.deck != null) throw new InvalidPlay('deck exists')
+  if (state.deck != null) throw new Error('deck exists')
 
   if (action.deck == null || action.deck.length != 50) 
-    throw new InvalidPlay("invalid deck")
+    throw new Error("invalid deck")
 
   return assign(state, { deck: action.deck })
 }
 
 function deal(state, action) {
   if (state.deck == null || state.deck.length != DECK_LENGTH)
-    throw new InvalidPlay('deck is not fresh')
+    throw new Error('deck is not fresh')
   if (!isEmpty(state.hands)) 
-    throw new InvalidPlay('hands are dealt')
+    throw new Error('hands are dealt')
 
   let deck = state.deck.slice()
     , hands = []
@@ -108,7 +106,7 @@ function play(state, action) {
   const { tile } = action
 
   if (!currentHand(state).has(tile))
-    throw new InvalidPlay("must play tiles from hand")
+    throw new Error("must play tiles from hand")
 
   if (isPlayable(state, tile)) {
     const played = assign(state.played, { [tile.color]: tile.number })
@@ -139,10 +137,10 @@ export function isPlayable(state, tile) {
 }
 
 function discard(state, action) {
-  const { tile } = action.tile
+  const { tile } = action
 
   if (!currentHand(state).has(tile)) 
-    throw new InvalidPlay("can't discard what you don't have")
+    throw new Error("can't discard what you don't have")
 
   const discards = add(state.discards, tile)
       , clues = Math.max(state.clues + 1, CLUE_MAX)
@@ -162,16 +160,16 @@ function isGameOver(state) {
 
 function clue(state, action) {
   if (state.clues <= 0)
-    throw new InvalidPlay("no clues to give")
+    throw new Error("no clues to give")
 
   const { info, player } = action
 
   if (state.turn === player) 
-    throw new InvalidPlay("no self-clues")
+    throw new Error("no self-clues")
 
   if (!some( state.hands[player]
            , tile => matches(tile, info)))
-    throw new InvalidPlay("player must have some of this")
+    throw new Error("player must have some of this")
 
   const clueTiles = filter(state.hands[player], tile => matches(tile, info))
 

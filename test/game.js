@@ -1,6 +1,6 @@
 import { turn, currentHand, isPlayable } from '../game'
 import { first } from '../proto'
-import { Shuffle, Deal, Play, Clue } from '../actions'
+import { Shuffle, Deal, Play, Clue, Discard } from '../actions'
 
 import { expect } from 'chai'
 
@@ -161,6 +161,43 @@ describe("game redux", function () {
 
     it("increments the turn indicator", function () {
       expect(states[2].turn).to.equal(0)
+    })
+  })
+
+  describe("Discard", function () {
+    let actions, states, discard
+    before(() => {
+      actions = []
+
+      actions.push(new Shuffle())
+      actions.push(new Deal(2))
+      
+      states = [actions.reduce(turn, undefined)]
+      
+      let tile = first(currentHand(states[0]))
+      expect(tile).to.exist
+
+      discard = new Discard(tile)
+      states.push(turn(states[0], discard))
+    })
+
+    it("was discarded", function () {
+        expect(states[1].discards.has(discard.tile)).to.be.true
+    })
+
+    it("didn't fry the hands", function () {
+      for (let hand of states[1].hands) {
+        expect(hand).to.exist
+      }
+    })
+
+    it("increments the turn indicator", function () {
+      expect(states[1].turn).to.equal(1)
+    })
+
+    it("is not present in the original hand anymore", function () {
+      expect(states[0].hands[0].has(discard.tile)).to.be.true
+      expect(states[1].hands[0].has(discard.tile)).to.be.false
     })
   })
 
