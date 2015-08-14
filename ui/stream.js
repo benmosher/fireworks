@@ -103,15 +103,16 @@ export function repl() {
       return new Actions.Play(tile)
     }],
     [/discard (\d)/, () => {}],
-    [ /(tell|clue)( player)? \d( about)? (red|blue|green|yellow|white)|(\d)/
-    , function clue([, player,, color, number]) {
+    [ /tell player (\d) about (red|blue|green|yellow|white)?(\d)?/
+    , function clue([,player, color, number]) {
       let info
       if (color && colors.has(color)) info = { color }
-      if (number && number in numberMap) info = { number }
-      if (!info) {
-        write("invalid clue.")
+      if (number && number in numberMap) info = { number: +number }
+      if (player >= state.hands.length || !info) {
+        write("invalid clue.\n")
         return
       }
+      return new Actions.Clue(player, info)
     }
     ]
   ]
