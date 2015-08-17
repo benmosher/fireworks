@@ -1,3 +1,1 @@
-import { repl } from './ui/stream'
-
-repl()
+require('./ui/server')
