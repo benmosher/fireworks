@@ -1,24 +1,29 @@
 const colorText = require('colors/safe')
 
-function writeView(stream, game) {
-  stream.write(`you are player ${game.turn}.\n`)
-  stream.write(`there are ${game.clues} clues and ${game.fuses} fuses.\n`)
+export function currentView(game, players) {
+  let view = ""
+  view += `there are ${game.clues} clues and ${game.fuses} fuses remaining.\n`
 
   game.hands.forEach(function (hand, playerIndex) {
     if (playerIndex === game.turn) {
-      stream.write(`you know: ${knowledgeString(hand, game.knowledge)}\n`)
+      view += `you know: ${knowledgeString(hand, game.knowledge)}\n`
     } else {
-      writePlayer(stream, playerIndex, hand, game.knowledge)
+      view += playerView(players[playerIndex], hand, game.knowledge)
     }
   })
 
-  stream.write(`discards are: ${handString(game.discards)}\n`)
-  stream.write(`played are: ${boardString(game.played)}\n`)
+  view += (`discards are: ${handString(game.discards)}\n`)
+  view += (`played are: ${boardString(game.played)}\n`)
+
+  return view
 }
 
-function writePlayer(stream, player, hand, knowledge) {
-  stream.write(`player ${player} has ${handString(hand)}.\n`)
-  stream.write(`\tand knows: ${knowledgeString(hand, knowledge)}\n`)
+function playerView(player, hand, knowledge) {
+  let view = ""
+  view += `${player.name} has ${handString(hand)}.\n`
+  view += `\tand knows: ${knowledgeString(hand, knowledge)}\n`
+
+  return view
 }
 
 const numberMap = {

@@ -152,7 +152,7 @@ function discard(state, action) {
                )
 }
 
-function isGameOver(state) {
+export function isGameOver(state) {
   return state.fuses === 0 || currentHand(state).size <
     (state.hands.length <= 3 ? 5 : 4)
 }
