@@ -26,7 +26,7 @@ function playerView(player, hand, knowledge) {
   return view
 }
 
-const numberMap = {
+export const numberMap = {
   1: '  *  ',
   2: ' * * ',
   3: ' *** ',

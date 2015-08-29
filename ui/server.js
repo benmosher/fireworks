@@ -8,7 +8,7 @@ const readline = require('readline')
 import { colors } from '../deck'
 import { turn, currentHand, isGameOver } from '../game'
 
-import { currentView } from './stream'
+import { currentView, numberMap } from './stream'
 import * as Actions from '../actions'
 
 let plays = [new Actions.Shuffle()]
@@ -74,6 +74,37 @@ function turnLoop() {
     }
   })
 
+  const turnTypes = [
+    [/play (\d)/, function play(sock, [,tileIndex]) {
+      const tile = Array.from(currentHand(state))[tileIndex]
+
+      if (tile == null) {
+        sock.write("tile not found, try again.\n")
+        return null
+      }
+      return new Actions.Play(tile)
+    }],
+    [/discard (\d)/, function discard(sock, [, tileIndex]) {
+      if (tileIndex >= currentHand(state).size) {
+        sock.write("invalid tile index")
+        return
+      }
+
+      return new Actions.Discard(Array.from(currentHand(state))[tileIndex])
+    }],
+    [ /tell player (\d) about (red|blue|green|yellow|white)?(\d)?/
+    , function clue(sock, [,player, color, number]) {
+      let info
+      if (color && colors.has(color)) info = { color }
+      if (number && number in numberMap) info = { number: +number }
+      if (player >= state.hands.length || !info) {
+        sock.write("invalid clue.\n")
+        return
+      }
+      return new Actions.Clue(player, info)
+    }]
+  ]
+
   function informOfTurn({ sock }) {
     sock.write(`${currentPlayer().name}'s turn. waiting for play...\n`)
   }
@@ -82,7 +113,7 @@ function turnLoop() {
     rl.question( `your move, ${name}. what's the play? \n` + 
                  currentView(state, players)
                , handlePlay)
-    
+
     function handlePlay(play) {
       sock.write(`${play}, great choice.\n`)
       announce(play, name, index)
