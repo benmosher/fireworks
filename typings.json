@@ -1,0 +1,7 @@
+{
+  "name": "hanabi",
+  "dependencies": {
+    "invariant": "registry:npm/invariant#2.0.0+20160211003958",
+    "lodash": "registry:npm/lodash#4.0.0+20160416211519"
+  }
+}
